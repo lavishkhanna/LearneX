@@ -1,44 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Course Recommendation</title>
-        <!-- Bootstrap CSS -->
-        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    </head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Recommendation System</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header text-center">
-                        <h2>Course Recommendation System</h2>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="/">Course RecSys</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">{{ user.username }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="bg-primary text-white text-center py-5">
+        <div class="container">
+            <h1>Welcome to the Course Recommendation System</h1>
+            <p class="lead">Your personalized learning journey starts here.</p>
+            <a href="#courses" class="btn btn-light btn-lg mt-3">Explore Courses</a>
+        </div>
+    </header>
+
+    <!-- Courses Section -->
+<!-- Courses Section -->
+<section id="courses" class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-4">Available Courses</h2>
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Python</h5>
+                        <p class="card-text">Learn the basics of Python programming and build real-world projects.</p>
+                        <a href="{{ url_for('start_learning', course_name='Python') }}" class="btn btn-primary">Start Learning</a>
                     </div>
-                    <div class="card-body">
-                        <form action="/select_course" method="POST">
-                            <div class="form-group">
-                                <label for="course">Select Course</label>
-                                <select class="form-control" name="course" id="course">
-                                    <option value="data_science">Data Science</option>
-                                    <option value="machine_learning">Machine Learning</option>
-                                    <option value="web_development">Web Development</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-block">Start Learning</button>
-                        </form>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Data Science</h5>
+                        <p class="card-text">Dive into data science with in-depth courses on machine learning, data visualization, and more.</p>
+                        <a href="{{ url_for('start_learning', course_name='Data Science') }}" class="btn btn-primary">Start Learning</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">C++</h5>
+                        <p class="card-text">Master C++ with detailed lessons on algorithms, data structures, and memory management.</p>
+                        <a href="{{ url_for('start_learning', course_name='C++') }}" class="btn btn-primary">Start Learning</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">UI/UX Design</h5>
+                        <p class="card-text">Explore the world of UI/UX design with hands-on projects and industry best practices.</p>
+                        <a href="{{ url_for('start_learning', course_name='UI/UX Design') }}" class="btn btn-primary">Start Learning</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</section>
+
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-3">
+        <div class="container">
+            <p class="mb-0">© 2024 Course RecSys. All Rights Reserved.</p>
+        </div>
+    </footer>
+
     <!-- Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
-
 </html>

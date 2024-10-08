@@ -8,15 +8,28 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
-    <div class="container mt-5">
-        <h2>{{ course | title }} Topics</h2>
-        <ul class="list-group">
-            {% for topic in topics %}
-            <li class="list-group-item">{{ topic }}</li>
-            {% endfor %}
-        </ul>
-        <a href="/" class="btn btn-secondary mt-3">Back to Course Selection</a>
+    <h3 class="mt-5">Recommended Videos for {{ topics[0] if topics else 'this course' }}</h3>
+    <h2>Videos for {{ organisation }}</h2>
+
+    <div class="row">
+        {% for video in videos %}
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <img src="https://img.youtube.com/vi/{{ video['link'].split('v=')[-1] }}/0.jpg" class="card-img-top" alt="{{ video['title'] }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ video['title'] }}</h5>
+                    <p class="card-text">{{ video['description'] }}</p>
+                    <a href="{{ video['link'] }}" class="btn btn-primary" target="_blank">Watch Video</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
     </div>
+    
+    <a href="/" class="btn btn-secondary mt-3">Back to Organisation Selection</a>
+    
+    
+    
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
