@@ -177,12 +177,29 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'  # Redirect users to the login page if not authenticated
 
-# Create User model
+# Define User model first
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
+    
+    # Define the relationship with backref to Roadmap
+    roadmaps = db.relationship('Roadmap', backref='user', lazy=True)
+
+# Now define Roadmap model
+class Roadmap(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    course_name = db.Column(db.String(150), nullable=False)
+    topic = db.Column(db.String(150), nullable=False)  # Main topic
+    subtopic = db.Column(db.String(150), nullable=True)  # Subtopic
+    completed = db.Column(db.Boolean, default=False)
+
+    # No need to define the user relationship here since it's already defined in the User model
+
+
+
 
 # Create the database
 with app.app_context():
@@ -191,7 +208,7 @@ with app.app_context():
 # User loader callback for Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 # Home route
 @app.route('/')
@@ -202,23 +219,40 @@ def home():
 from flask import redirect, url_for, render_template
 from flask_login import login_required
 
-# Example topics dictionary
-topics = {
-    "Python": ["Variables", "Data Types", "Control Flow", "Functions"],
-    "Data Science": ["NumPy", "Pandas", "Matplotlib", "Machine Learning"],
-    "C++": ["Pointers", "Memory Management", "Algorithms", "Data Structures"],
-    "UI/UX Design": ["User Research", "Prototyping", "User Flows", "Wireframing"]
-}
+# # Example topics dictionary
+# topics = {
+#     "Python": ["Variables", "Data Types", "Control Flow", "Functions"],
+#     "Data Science": ["NumPy", "Pandas", "Matplotlib", "Machine Learning"],
+#     "C++": ["Pointers", "Memory Management", "Algorithms", "Data Structures"],
+#     "UI/UX Design": ["User Research", "Prototyping", "User Flows", "Wireframing"]
+# }
 
-# Route for starting learning based on selected course
-@app.route('/start_learning/<course_name>', methods=['GET'])
-@login_required  # Ensure that only logged-in users can access this route
+
+@app.route('/start_learning/<course_name>', methods=['GET', 'POST'])
+@login_required
 def start_learning(course_name):
-    # Fetch the topics for the selected course
-    course_topics = topics.get(course_name, [])
+    course_topics = topics.get(course_name, {})
 
-    # Redirect to the learning page with the topics of the selected course
-    return render_template('learning_page.html', course_name=course_name, topics=course_topics)
+    # Add both topics and subtopics to the user's roadmap
+    for topic_category, subtopics in course_topics.items():
+        # Add the topic itself (e.g., "Data Manipulation")
+        existing_topic = Roadmap.query.filter_by(user_id=current_user.id, course_name=course_name, topic=topic_category).first()
+        if not existing_topic:
+            new_topic = Roadmap(user_id=current_user.id, course_name=course_name, topic=topic_category, subtopic=None)
+            db.session.add(new_topic)
+
+        # Add each subtopic (e.g., "NumPy", "Pandas")
+        for subtopic in subtopics:
+            existing_subtopic = Roadmap.query.filter_by(user_id=current_user.id, course_name=course_name, topic=topic_category, subtopic=subtopic).first()
+            if not existing_subtopic:
+                new_subtopic = Roadmap(user_id=current_user.id, course_name=course_name, topic=topic_category, subtopic=subtopic)
+                db.session.add(new_subtopic)
+    
+    db.session.commit()
+    return redirect(url_for('roadmap', course_name=course_name))
+
+
+
 
 # Register route
 @app.route('/register', methods=['GET', 'POST'])
@@ -269,6 +303,75 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('login'))
+
+# Route for displaying the roadmap
+@app.route('/roadmap/<course_name>', methods=['GET', 'POST'])
+@login_required
+def roadmap(course_name):
+    # Fetch the list of topic categories (keys) for the selected course
+    course_topics = topics.get(course_name, {})
+    
+    # If it's a POST request (user is removing a topic or modifying the roadmap)
+    if request.method == 'POST':
+        topic = request.form['topic']
+        # Adding a new topic to roadmap
+        new_topic = Roadmap(user_id=current_user.id, course_name=course_name, topic=topic, completed=False)
+        db.session.add(new_topic)
+        db.session.commit()
+
+    # Fetch the user's roadmap for this course
+    roadmap = Roadmap.query.filter_by(user_id=current_user.id, course_name=course_name).all()
+    
+    # Render the roadmap page
+    return render_template('roadmap_page.html', course_name=course_name, course_topics=course_topics, roadmap=roadmap)
+
+
+# Route for marking a topic as completed
+@app.route('/complete_topic/<int:roadmap_id>', methods=['POST'])
+@login_required
+def complete_topic(roadmap_id):
+    roadmap_item = Roadmap.query.get_or_404(roadmap_id)
+    if roadmap_item.user_id == current_user.id:
+        roadmap_item.completed = True
+        db.session.commit()
+    return redirect(url_for('roadmap', course_name=roadmap_item.course_name))
+
+# Route for removing a topic
+@app.route('/remove_topic/<int:roadmap_id>', methods=['POST'])
+@login_required
+def remove_topic(roadmap_id):
+    roadmap_item = Roadmap.query.get_or_404(roadmap_id)
+    if roadmap_item.user_id == current_user.id:
+        db.session.delete(roadmap_item)
+        db.session.commit()
+    return redirect(url_for('roadmap', course_name=roadmap_item.course_name))
+
+
+
+@app.route('/add_topic/<course_name>', methods=['POST'])
+@login_required
+def add_topic(course_name):
+    topic = request.form['topic']
+    existing_topic = Roadmap.query.filter_by(user_id=current_user.id, course_name=course_name, topic=topic).first()
+    if not existing_topic:
+        new_topic = Roadmap(user_id=current_user.id, course_name=course_name, topic=topic, completed=False)
+        db.session.add(new_topic)
+        db.session.commit()
+
+    return redirect(url_for('roadmap', course_name=course_name))
+
+
+
+
+@app.route('/debug_roadmap', methods=['GET'])
+@login_required
+def debug_roadmap():
+    roadmaps = Roadmap.query.filter_by(user_id=current_user.id).all()
+    for roadmap in roadmaps:
+        print(f"User: {current_user.username}, Course: {roadmap.course_name}, Topic: {roadmap.topic}, Completed: {roadmap.completed}")
+    return "Check your console for debug info."
+
+
 
 # Run the app
 if __name__ == '__main__':

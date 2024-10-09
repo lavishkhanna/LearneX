@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ course_name }} Roadmap</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="/">Course RecSys</a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Roadmap Section -->
+    <div class="container py-5">
+        <h2>{{ course_name }} Learning Roadmap</h2>
+
+        <!-- Display Topic and Subtopics -->
+        <ul class="list-group mt-4">
+            {% for item in roadmap %}
+                <!-- Main topic without subtopic -->
+                {% if not item.subtopic %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <strong>{{ item.topic }}</strong>
+                        <span>
+                            {% if item.completed %}
+                                <span class="badge badge-success">Completed</span>
+                            {% else %}
+                                <form action="{{ url_for('complete_topic', roadmap_id=item.id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-primary">Mark as Completed</button>
+                                </form>
+                            {% endif %}
+                            <form action="{{ url_for('remove_topic', roadmap_id=item.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                            </form>
+                        </span>
+                    </li>
+                {% else %}
+                    <!-- Subtopic under the main topic -->
+                    <li class="list-group-item pl-4 d-flex justify-content-between align-items-center">
+                        <span>{{ item.subtopic }}</span> <!-- Indented subtopic -->
+                        <span>
+                            {% if item.completed %}
+                                <span class="badge badge-success">Completed</span>
+                            {% else %}
+                                <form action="{{ url_for('complete_topic', roadmap_id=item.id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-primary">Mark as Completed</button>
+                                </form>
+                            {% endif %}
+                            <form action="{{ url_for('remove_topic', roadmap_id=item.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                            </form>
+                        </span>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+
+        <a href="/" class="btn btn-secondary mt-4">Back to Courses</a>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-auto">
+        <div class="container">
+            <p class="mb-0">© 2024 Course RecSys. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
