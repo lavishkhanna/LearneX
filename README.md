@@ -72,7 +72,7 @@ LearneX uses advanced recommendation algorithms, including Sequential Pattern Mi
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-username/LearneX.git
+   git clone https://github.com/lavishkhanna/LearneX.git
    cd LearneX
    ```
 
