@@ -32,14 +32,14 @@
 #     # Return the videos in the desired format
 #     videos = []
 #     for _, row in filtered_videos.iterrows():
-#         video_data = {
+#         data = {
 #             'title': row['title'],
 #             'link': row['link'],
 #             'channel': row['channel'],
 #             'description': row['desc'],
 #             'duration': row['duration']
 #         }
-#         videos.append(video_data)
+#         videos.append(data)
     
 #     return videos
 
@@ -159,9 +159,13 @@ topics = {
 
 
 
+
 from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+import pandas as pd
+
+data=pd.read_csv('YT_data_1.csv')
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -325,6 +329,20 @@ def roadmap(course_name):
     # Render the roadmap page
     return render_template('roadmap_page.html', course_name=course_name, course_topics=course_topics, roadmap=roadmap)
 
+# @app.route('/roadmap/<course_name>', methods=['GET', 'POST'])
+# @login_required
+# def roadmap(course_name):
+#     # Retrieve topics and subtopics for the selected course
+#     course_topics = topics.get(course_name, {})  # Structured course data
+
+#     # Fetch the user's roadmap progress data for this course from the database
+#     roadmap = Roadmap.query.filter_by(user_id=current_user.id, course_name=course_name).all()
+    
+#     # Render the template with both course structure and user progress data
+#     return render_template('roadmap_page.html', course_name=course_name, course_topics=course_topics, roadmap=roadmap)
+
+
+
 
 # Route for marking a topic as completed
 @app.route('/complete_topic/<int:roadmap_id>', methods=['POST'])
@@ -373,6 +391,67 @@ def debug_roadmap():
 
 
 
+# ----------------------------------------------------------------THIS IS SEPERATE VIDOES SECTION FOR EACH TOPIC, THIS HAS WRONG NAMING CONVENTIONS, TO BE FIXED ACCORDING TO YT_DATA_1.CSV STRUCTURE ------------------------------------------------------
+import random
+
+
+@app.route('/module/<course_name>/<topic>/<subtopic>', methods=['GET'])
+@login_required
+def module_page(course_name, topic, subtopic):
+    # Example data for demonstration
+    video_url = f"https://example.com/video/{course_name}/{topic}/{subtopic}"  # Placeholder video URL
+    content = {
+        "description": f"This module covers {subtopic} in {course_name} - {topic}.",
+        "resources": [
+            {"name": "Documentation", "link": "https://www.example.com/docs"},
+            {"name": "Practice Exercises", "link": "https://www.example.com/practice"}
+        ]
+    }
+
+    video_row = data[
+        (data['organisation'] == course_name) &
+        (data['module'] == topic) &
+        (data['topic'] == subtopic)
+    ]
+
+    video_url=video_row['link']
+
+    
+    import random
+
+    # Check if video_row has any matches
+    if not video_row.empty:
+        # Randomly select a link from the 'link' column
+        video_url = random.choice(video_row['link'].tolist())
+        
+        # Convert the YouTube link to embeddable format if necessary
+        if "watch?v=" in video_url:
+            video_id = video_url.split("watch?v=")[-1]
+            video_url = f"https://www.youtube.com/embed/{video_id}"
+    else:
+        video_url = None  # Set a default or handle the case when no rows match
+
+
+
+    
+    # Render the module page with fetched content
+    return render_template('module_page.html', course_name=course_name, topic=topic, subtopic=subtopic, video_url=video_url, content=content)
+
+
+
+
+
+
+
+
+
+
+
+
 # Run the app
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+
+

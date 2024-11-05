@@ -32,7 +32,11 @@
                 <!-- Main topic without subtopic -->
                 {% if not item.subtopic %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <strong>{{ item.topic }}</strong>
+                        <strong>
+                            <a href="{{ url_for('module_page', course_name=course_name, topic=item.topic, subtopic=item.topic) }}">
+                                {{ item.topic }}
+                            </a>
+                        </strong>
                         <span>
                             {% if item.completed %}
                                 <span class="badge badge-success">Completed</span>
@@ -49,7 +53,11 @@
                 {% else %}
                     <!-- Subtopic under the main topic -->
                     <li class="list-group-item pl-4 d-flex justify-content-between align-items-center">
-                        <span>{{ item.subtopic }}</span> <!-- Indented subtopic -->
+                        <span>
+                            <a href="{{ url_for('module_page', course_name=course_name, topic=item.topic, subtopic=item.subtopic) }}">
+                                {{ item.subtopic }}
+                            </a>
+                        </span>
                         <span>
                             {% if item.completed %}
                                 <span class="badge badge-success">Completed</span>
